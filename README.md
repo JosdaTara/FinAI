@@ -1,14 +1,14 @@
-# 💰 FinAI — Asistente Inteligente de Finanzas Personales
+# FinAI — Asistente Inteligente de Finanzas Personales
 
 **Proyecto de aula — Nuevas Tecnologías**
 
 FinAI es una aplicación web que permite registrar ingresos y gastos personales, visualizar estadísticas mediante gráficos y recibir recomendaciones de un asistente inteligente basado en Inteligencia Artificial (Google Gemini) que analiza los datos financieros reales del usuario.
 
-> ⚠️ Prototipo académico: no maneja dinero real ni se conecta con cuentas bancarias.
+> Prototipo académico: no maneja dinero real ni se conecta con cuentas bancarias.
 
 ---
 
-## 🧱 Arquitectura
+## Arquitectura
 
 ```
 Usuario → Interfaz Web (React) → Backend (Node + Express) → Firestore + API Gemini
@@ -28,7 +28,7 @@ Usuario → Interfaz Web (React) → Backend (Node + Express) → Firestore + AP
 
 ---
 
-## 📁 Estructura
+## Estructura
 
 ```
 FinAI/
@@ -52,7 +52,7 @@ FinAI/
 
 ---
 
-## ⚙️ Configuración inicial
+## Configuración inicial
 
 ### 1. Firebase
 
@@ -90,7 +90,7 @@ GEMINI_MODEL=gemini-2.0-flash
 
 ---
 
-## ▶️ Ejecución
+## Ejecución
 
 ```bash
 # Terminal 1 — Backend
@@ -117,7 +117,7 @@ Verifica el estado del backend en: `http://localhost:4000/api/health`
 
 ---
 
-## 🔌 Endpoints principales
+## Endpoints principales
 
 | Método | Ruta | Descripción |
 |---|---|---|
