@@ -5,8 +5,8 @@ import { formatCOP } from '../lib/format';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export const CHART_COLORS = [
-  '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#ec4899', '#14b8a6', '#f97316', '#64748b',
+  '#34d399', '#60a5fa', '#fbbf24', '#f87171', '#a78bfa',
+  '#f472b6', '#2dd4bf', '#fb923c', '#94a3b8',
 ];
 
 export default function CategoryDoughnut({ data }) {
@@ -20,8 +20,9 @@ export default function CategoryDoughnut({ data }) {
       {
         data: data.map((d) => d.total),
         backgroundColor: data.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
-        borderWidth: 2,
-        borderColor: '#ffffff',
+        borderWidth: 3,
+        borderColor: '#14171c',
+        hoverOffset: 6,
       },
     ],
   };
@@ -30,13 +31,22 @@ export default function CategoryDoughnut({ data }) {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'right' },
+      legend: {
+        position: 'right',
+        labels: { color: '#9aa1ac', boxWidth: 12, padding: 14, font: { size: 12 } },
+      },
       tooltip: {
+        backgroundColor: '#1a1e25',
+        borderColor: '#23272f',
+        borderWidth: 1,
+        titleColor: '#e8eaed',
+        bodyColor: '#9aa1ac',
         callbacks: {
           label: (ctx) => ` ${ctx.label}: ${formatCOP(ctx.parsed)}`,
         },
       },
     },
+    cutout: '62%',
   };
 
   return (

@@ -1,12 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from './Icon';
 
 const NAV_ITEMS = [
-  { to: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { to: '/movements', label: 'Movimientos', icon: '💳' },
-  { to: '/budgets', label: 'Presupuesto', icon: '🎯' },
-  { to: '/statistics', label: 'Estadísticas', icon: '📈' },
-  { to: '/assistant', label: 'Asistente FinAI', icon: '🤖' },
+  { to: '/dashboard', label: 'Dashboard', icon: 'grid' },
+  { to: '/movements', label: 'Movimientos', icon: 'card' },
+  { to: '/budgets', label: 'Presupuesto', icon: 'target' },
+  { to: '/statistics', label: 'Estadísticas', icon: 'chart' },
+  { to: '/assistant', label: 'Asistente FinAI', icon: 'bot' },
 ];
 
 export default function Layout() {
@@ -22,8 +23,11 @@ export default function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-logo">💰</span>
-          <h1>FinAI</h1>
+          <div className="brand-mark">F</div>
+          <div>
+            <h1>FinAI</h1>
+            <p className="brand-tag">FINANZAS + IA</p>
+          </div>
         </div>
 
         <nav>
@@ -33,7 +37,7 @@ export default function Layout() {
               to={item.to}
               className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
             >
-              <span className="nav-icon">{item.icon}</span>
+              <Icon name={item.icon} size={17} />
               {item.label}
             </NavLink>
           ))}
@@ -43,6 +47,7 @@ export default function Layout() {
           <p className="user-name">{user?.displayName || 'Usuario'}</p>
           <p className="user-email">{user?.email}</p>
           <button type="button" className="btn btn-outline btn-small" onClick={handleLogout}>
+            <Icon name="logout" size={15} />
             Cerrar sesión
           </button>
         </div>

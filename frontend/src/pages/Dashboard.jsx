@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { formatCOP, formatDate, formatMonth, currentMonth } from '../lib/format';
 import StatCard from '../components/StatCard';
 import CategoryDoughnut from '../components/CategoryDoughnut';
+import Icon from '../components/Icon';
 
 export default function Dashboard() {
   const [summary, setSummary] = useState(null);
@@ -59,25 +60,25 @@ export default function Dashboard() {
       </header>
 
       <section className="cards-grid">
-        <StatCard title="Ingresos" value={formatCOP(summary.totalIncome)} icon="📥" variant="income" />
-        <StatCard title="Gastos" value={formatCOP(summary.totalExpense)} icon="📤" variant="expense" />
+        <StatCard title="Ingresos" value={formatCOP(summary.totalIncome)} icon="income" variant="income" />
+        <StatCard title="Gastos" value={formatCOP(summary.totalExpense)} icon="expense" variant="expense" />
         <StatCard
           title="Balance"
           value={formatCOP(summary.balance)}
-          icon={summary.balance >= 0 ? '✅' : '⚠️'}
+          icon={summary.balance >= 0 ? 'check' : 'alert'}
           variant={summary.balance >= 0 ? 'balance-positive' : 'balance-negative'}
         />
-        <StatCard title="Tasa de ahorro" value={`${savingsRate}%`} icon="🏦" variant="savings" />
+        <StatCard title="Tasa de ahorro" value={`${savingsRate}%`} icon="trendUp" variant="savings" />
       </section>
 
       <section className="grid-2">
         <div className="panel">
-          <h3>Gastos por categoría</h3>
+          <h3><Icon name="chart" size={16} /> Gastos por categoría</h3>
           <CategoryDoughnut data={summary.byCategory} />
         </div>
 
         <div className="panel">
-          <h3>Recomendaciones FinAI 🤖</h3>
+          <h3><Icon name="bot" size={16} /> Recomendaciones FinAI</h3>
           <ul className="recommendation-list">
             {recommendations.map((rec, i) => (
               <li key={i}>{rec}</li>

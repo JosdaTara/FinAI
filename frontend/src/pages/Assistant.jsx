@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api';
+import Icon from '../components/Icon';
 
 const SUGGESTIONS = [
   '¿En qué estoy gastando más?',
@@ -13,7 +14,7 @@ const SUGGESTIONS = [
 const WELCOME = {
   role: 'assistant',
   content:
-    '¡Hola! Soy FinAI, tu asistente financiero. 🤖 Puedo analizar tus ingresos y gastos registrados para responder tus preguntas y darte recomendaciones. ¿Qué quieres saber?',
+    'Hola, soy FinAI, tu asistente financiero. Puedo analizar tus ingresos y gastos registrados para responder tus preguntas y darte recomendaciones. ¿Qué quieres saber?',
 };
 
 export default function Assistant() {
@@ -63,7 +64,7 @@ export default function Assistant() {
   return (
     <div className="page chat-page">
       <header className="page-header">
-        <h2>Asistente FinAI 🤖</h2>
+        <h2>Asistente FinAI</h2>
         <p className="page-subtitle">
           Pregunta sobre tus finanzas: el sistema consulta tus datos reales y la IA los analiza.
         </p>
@@ -107,8 +108,8 @@ export default function Assistant() {
             placeholder="Escribe tu pregunta…"
             disabled={sending}
           />
-          <button type="submit" className="btn btn-primary" disabled={sending || !input.trim()}>
-            Enviar
+          <button type="submit" className="btn btn-primary" disabled={sending || !input.trim()} title="Enviar">
+            <Icon name="send" size={16} />
           </button>
         </form>
       </div>

@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { formatCOP, formatMonth, currentMonth } from '../lib/format';
 import CategoryDoughnut from '../components/CategoryDoughnut';
 import MonthlyBarChart from '../components/MonthlyBarChart';
+import StatCard from '../components/StatCard';
 
 export default function Statistics() {
   const [month, setMonth] = useState(currentMonth());
@@ -56,38 +57,22 @@ export default function Statistics() {
       {error && <p className="alert alert-error">{error}</p>}
 
       <section className="cards-grid">
-        <div className="stat-card income">
-          <div className="stat-icon">📥</div>
-          <div>
-            <p className="stat-title">Ingresos de {formatMonth(month)}</p>
-            <p className="stat-value">{formatCOP(summary.totalIncome)}</p>
-          </div>
-        </div>
-        <div className="stat-card expense">
-          <div className="stat-icon">📤</div>
-          <div>
-            <p className="stat-title">Gastos de {formatMonth(month)}</p>
-            <p className="stat-value">{formatCOP(summary.totalExpense)}</p>
-          </div>
-        </div>
-        <div className={`stat-card ${summary.balance >= 0 ? 'balance-positive' : 'balance-negative'}`}>
-          <div className="stat-icon">{summary.balance >= 0 ? '✅' : '⚠️'}</div>
-          <div>
-            <p className="stat-title">Balance</p>
-            <p className="stat-value">{formatCOP(summary.balance)}</p>
-          </div>
-        </div>
-        <div className="stat-card savings">
-          <div className="stat-icon">🏆</div>
-          <div>
-            <p className="stat-title">Categoría top</p>
-            <p className="stat-value small">
-              {summary.topCategory
-                ? `${summary.topCategory.category} (${formatCOP(summary.topCategory.total)})`
-                : 'Sin gastos'}
-            </p>
-          </div>
-        </div>
+        <StatCard title={`Ingresos de ${formatMonth(month)}`} value={formatCOP(summary.totalIncome)} icon="income" variant="income" />
+        <StatCard title={`Gastos de ${formatMonth(month)}`} value={formatCOP(summary.totalExpense)} icon="expense" variant="expense" />
+        <StatCard
+          title="Balance"
+          value={formatCOP(summary.balance)}
+          icon={summary.balance >= 0 ? 'check' : 'alert'}
+          variant={summary.balance >= 0 ? 'balance-positive' : 'balance-negative'}
+        />
+        <StatCard
+          title="Categoría top"
+          value={summary.topCategory
+            ? `${summary.topCategory.category} (${formatCOP(summary.topCategory.total)})`
+            : 'Sin gastos'}
+          icon="trophy"
+          variant="savings"
+        />
       </section>
 
       <section className="grid-2">

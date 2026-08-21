@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import {
   formatCOP,
@@ -7,6 +7,7 @@ import {
   todayISO,
   CATEGORIES,
 } from '../lib/format';
+import Icon from '../components/Icon';
 
 const EMPTY_FORM = {
   type: 'gasto',
@@ -110,7 +111,8 @@ export default function Movements() {
           <p className="page-subtitle">Historial de ingresos y gastos</p>
         </div>
         <button type="button" className="btn btn-primary" onClick={openCreate}>
-          + Agregar movimiento
+          <Icon name="plus" size={15} />
+          Agregar movimiento
         </button>
       </header>
 
@@ -168,10 +170,10 @@ export default function Movements() {
                   </td>
                   <td className="right">
                     <button type="button" className="btn-icon" title="Editar" onClick={() => openEdit(m)}>
-                      ✏️
+                      <Icon name="edit" size={15} />
                     </button>
                     <button type="button" className="btn-icon" title="Eliminar" onClick={() => handleDelete(m.id)}>
-                      🗑️
+                      <Icon name="trash" size={15} />
                     </button>
                   </td>
                 </tr>

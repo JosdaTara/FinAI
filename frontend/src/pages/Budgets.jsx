@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { formatCOP, CATEGORIES, currentMonth, formatMonth } from '../lib/format';
+import Icon from '../components/Icon';
 
 export default function Budgets() {
   const [budgets, setBudgets] = useState([]);
@@ -150,7 +151,7 @@ export default function Budgets() {
                   <div className="budget-footer">
                     <span className={b.percent >= 100 ? 'text-expense' : ''}>
                       {b.percent >= 100
-                        ? `⚠️ Presupuesto alcanzado (${b.percent}%)`
+                        ? `Presupuesto alcanzado (${b.percent}%)`
                         : `Has utilizado el ${b.percent}%`}
                     </span>
                     <span className="budget-actions">
@@ -163,10 +164,10 @@ export default function Budgets() {
                           setLimit(b.limit);
                         }}
                       >
-                        ✏️
+                        <Icon name="edit" size={15} />
                       </button>
                       <button type="button" className="btn-icon" title="Eliminar" onClick={() => handleDelete(b.id)}>
-                        🗑️
+                        <Icon name="trash" size={15} />
                       </button>
                     </span>
                   </div>

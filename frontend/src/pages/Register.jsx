@@ -43,7 +43,7 @@ export default function Register() {
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
         <div className="auth-brand">
-          <span className="brand-logo big">💰</span>
+          <div className="brand-mark">F</div>
           <h1>FinAI</h1>
           <p>Asistente Inteligente de Finanzas Personales</p>
         </div>
