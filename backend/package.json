@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
-    "seed": "node scripts/seed-demo.js"
+    "seed": "node scripts/seed-demo.js",
+    "smoke": "node scripts/smoke-test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

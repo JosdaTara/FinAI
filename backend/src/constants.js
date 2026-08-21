@@ -27,6 +27,12 @@ function monthKeyFromDate(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
+function dateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`;
+}
+
 function previousMonths(count, fromMonthKey = currentMonthKey()) {
   const [year, month] = fromMonthKey.split('-').map(Number);
   const keys = [];
@@ -51,6 +57,7 @@ module.exports = {
   currentMonthKey,
   monthRange,
   monthKeyFromDate,
+  dateKey,
   previousMonths,
   formatCOP,
 };

@@ -1,30 +1,44 @@
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-async function askGemini(prompt) {
+async function callGemini(prompt, retries = 2) {
   const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY no está configurada en backend/.env');
   }
 
-  const response = await fetch(`${GEMINI_URL}/${model}:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 600 },
-    }),
-  });
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const response = await fetch(`${GEMINI_URL}/${model}:generateContent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
+      }),
+    });
 
-  if (!response.ok) {
+    if (response.ok) {
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '';
+      if (text.trim()) return text.trim();
+      throw new Error('Gemini devolvió una respuesta vacía');
+    }
+
+    // 503/429: servicio saturado o límite de tasa — esperar y reintentar
+    if ((response.status === 503 || response.status === 429) && attempt < retries) {
+      await new Promise((resolve) => setTimeout(resolve, 4000 * (attempt + 1)));
+      continue;
+    }
+
     const detail = await response.text();
     throw new Error(`Gemini respondió ${response.status}: ${detail.slice(0, 300)}`);
   }
 
-  const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '';
-  return text.trim();
+  throw new Error('Gemini no respondió tras varios intentos');
 }
 
 function buildFinancialContext(context) {
@@ -83,20 +97,13 @@ function buildChatPrompt(question, history, contextText) {
 
   return [
     'Eres FinAI, un asistente financiero personal dentro de una aplicación web educativa.',
-    'Tu trabajo es analizar los datos financieros reales del usuario que se te entregan y responder sus preguntas.',
     '',
-    'Reglas:',
-    '- Responde siempre en español, con tono amable y claro.',
-    '- Usa ÚNICAMENTE los datos financieros proporcionados; no inventes cifras.',
-    '- Sé conciso: máximo 4 a 6 oraciones.',
-    '- Cuando sea útil, sugiere acciones prácticas de ahorro o control de gastos.',
-    '- No eres un asesor financiero profesional: si preguntan por inversiones o temas complejos, recomienda consultar a un profesional.',
-    '',
-    'Datos financieros del usuario:',
+    'A continuación se muestran los datos financieros reales del usuario:',
     contextText,
     historyText ? `\nConversación previa:\n${historyText}` : '',
     `\nPregunta del usuario: ${question}`,
-    '\nRespuesta de FinAI:',
+    '',
+    'Tarea: responde la pregunta del usuario en español, con tono amable y claro, usando únicamente los datos proporcionados sin inventar cifras. Sé conciso (máximo 5 oraciones). Cuando sea útil, sugiere acciones prácticas de ahorro o control de gastos. No eres un asesor financiero profesional: si preguntan por inversiones o temas complejos, recomienda consultar a un profesional.',
   ]
     .filter(Boolean)
     .join('\n');
@@ -104,12 +111,11 @@ function buildChatPrompt(question, history, contextText) {
 
 function buildRecommendationsPrompt(contextText) {
   return [
-    'Eres FinAI, un asistente financiero personal educativo.',
-    'Genera exactamente 3 recomendaciones cortas y personalizadas (una por línea, sin numerar) basadas en estos datos financieros:',
+    'A continuación se muestran los datos financieros de un usuario:',
     contextText,
     '',
-    'Reglas: español, máximo 20 palabras por recomendación, menciona cifras concretas cuando aplique, tono motivador.',
+    'Tarea: escribe exactamente 3 recomendaciones financieras personalizadas para este usuario. Responde ÚNICAMENTE con las 3 recomendaciones, una por línea, en español, máximo 20 palabras cada una, sin numeración ni viñetas.',
   ].join('\n');
 }
 
-module.exports = { askGemini, buildFinancialContext, buildChatPrompt, buildRecommendationsPrompt };
+module.exports = { askGemini: callGemini, buildFinancialContext, buildChatPrompt, buildRecommendationsPrompt };

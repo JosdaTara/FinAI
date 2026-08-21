@@ -1,11 +1,19 @@
 const { db } = require('../config/firebase');
-const { monthRange, monthKeyFromDate, previousMonths, currentMonthKey } = require('../constants');
+const { monthRange, dateKey, previousMonths, currentMonthKey } = require('../constants');
 
 const MOVEMENTS = 'movements';
 const BUDGETS = 'budgets';
 
 async function getUserItems(userId, node) {
-  const snapshot = await db.ref(`${node}/${userId}`).once('value');
+  let snapshot = await db.ref(`${node}/${userId}`).once('value');
+
+  // Reintento ante fallos transitorios de red (el SDK devuelve vacío
+  // en silencio si no logra renovar el token de acceso)
+  if (!snapshot.exists()) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    snapshot = await db.ref(`${node}/${userId}`).once('value');
+  }
+
   const value = snapshot.val() || {};
   return Object.entries(value).map(([id, data]) => ({ id, ...data }));
 }
@@ -15,8 +23,8 @@ async function getMovements(userId, { month, type, category } = {}) {
 
   if (month) {
     const { start, end } = monthRange(month);
-    const startKey = monthKeyFromDate(start);
-    const endKey = monthKeyFromDate(new Date(end.getTime() - 1));
+    const startKey = dateKey(start);
+    const endKey = dateKey(new Date(end.getTime() - 1));
     movements = movements.filter((m) => m.date >= startKey && m.date <= endKey);
   }
 
