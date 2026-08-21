@@ -1,0 +1,17 @@
+{
+  "name": "finai-backend",
+  "version": "1.0.0",
+  "description": "FinAI - API Express con Firebase Firestore y Google Gemini",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node scripts/seed-demo.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.3.0"
+  }
+}

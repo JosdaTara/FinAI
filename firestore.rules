@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Perfil del usuario: solo él puede leerlo y escribirlo
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Movimientos y presupuestos se gestionan SOLO a través del backend
+    // (el backend usa el SDK de administrador, que ignora estas reglas)
+    match /movements/{docId} {
+      allow read, write: if false;
+    }
+
+    match /budgets/{docId} {
+      allow read, write: if false;
+    }
+  }
+}
