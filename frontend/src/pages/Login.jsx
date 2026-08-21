@@ -68,6 +68,10 @@ export default function Login() {
         <p className="auth-switch">
           ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
         </p>
+
+        <p className="auth-home">
+          <Link to="/">← Volver al inicio</Link>
+        </p>
       </form>
     </div>
   );

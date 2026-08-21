@@ -105,6 +105,10 @@ export default function Register() {
         <p className="auth-switch">
           ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
         </p>
+
+        <p className="auth-home">
+          <Link to="/">← Volver al inicio</Link>
+        </p>
       </form>
     </div>
   );
