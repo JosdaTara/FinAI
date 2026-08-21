@@ -27,25 +27,21 @@ router.post('/', verifyToken, async (req, res) => {
   }
 
   try {
-    const existing = await db
-      .collection(BUDGETS)
-      .where('userId', '==', req.userId)
-      .where('category', '==', category)
-      .get();
+    const budgets = await getBudgets(req.userId);
 
-    if (!existing.empty) {
+    if (budgets.some((b) => b.category === category)) {
       return res.status(409).json({ error: `Ya existe un presupuesto para ${category}. Edítalo o elimínalo primero.` });
     }
 
-    const docRef = await db.collection(BUDGETS).add({
-      userId: req.userId,
+    const ref = db.ref(`${BUDGETS}/${req.userId}`).push();
+    await ref.set({
       category,
       limit,
       period: 'mensual',
       createdAt: new Date().toISOString(),
     });
 
-    res.status(201).json({ id: docRef.id, category, limit, period: 'mensual' });
+    res.status(201).json({ id: ref.key, category, limit, period: 'mensual' });
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar el presupuesto', detalle: err.message });
   }
@@ -59,15 +55,15 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 
   try {
-    const ref = db.collection(BUDGETS).doc(req.params.id);
-    const doc = await ref.get();
+    const ref = db.ref(`${BUDGETS}/${req.userId}/${req.params.id}`);
+    const snapshot = await ref.once('value');
 
-    if (!doc.exists || doc.data().userId !== req.userId) {
+    if (!snapshot.exists()) {
       return res.status(404).json({ error: 'Presupuesto no encontrado' });
     }
 
     await ref.update({ limit });
-    res.json({ id: req.params.id, limit, category: doc.data().category });
+    res.json({ id: req.params.id, limit, category: snapshot.val().category });
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar el presupuesto', detalle: err.message });
   }
@@ -75,14 +71,14 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    const ref = db.collection(BUDGETS).doc(req.params.id);
-    const doc = await ref.get();
+    const ref = db.ref(`${BUDGETS}/${req.userId}/${req.params.id}`);
+    const snapshot = await ref.once('value');
 
-    if (!doc.exists || doc.data().userId !== req.userId) {
+    if (!snapshot.exists()) {
       return res.status(404).json({ error: 'Presupuesto no encontrado' });
     }
 
-    await ref.delete();
+    await ref.remove();
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Error al eliminar el presupuesto', detalle: err.message });

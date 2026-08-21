@@ -43,12 +43,9 @@ router.post('/', verifyToken, async (req, res) => {
   if (errors.length > 0) return res.status(400).json({ error: errors.join('. ') });
 
   try {
-    const docRef = await db.collection(MOVEMENTS).add({
-      userId: req.userId,
-      ...data,
-      createdAt: new Date().toISOString(),
-    });
-    res.status(201).json({ id: docRef.id, ...data });
+    const ref = db.ref(`${MOVEMENTS}/${req.userId}`).push();
+    await ref.set(data);
+    res.status(201).json({ id: ref.key, ...data });
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar el movimiento', detalle: err.message });
   }
@@ -59,10 +56,10 @@ router.put('/:id', verifyToken, async (req, res) => {
   if (errors.length > 0) return res.status(400).json({ error: errors.join('. ') });
 
   try {
-    const ref = db.collection(MOVEMENTS).doc(req.params.id);
-    const doc = await ref.get();
+    const ref = db.ref(`${MOVEMENTS}/${req.userId}/${req.params.id}`);
+    const snapshot = await ref.once('value');
 
-    if (!doc.exists || doc.data().userId !== req.userId) {
+    if (!snapshot.exists()) {
       return res.status(404).json({ error: 'Movimiento no encontrado' });
     }
 
@@ -75,14 +72,14 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
-    const ref = db.collection(MOVEMENTS).doc(req.params.id);
-    const doc = await ref.get();
+    const ref = db.ref(`${MOVEMENTS}/${req.userId}/${req.params.id}`);
+    const snapshot = await ref.once('value');
 
-    if (!doc.exists || doc.data().userId !== req.userId) {
+    if (!snapshot.exists()) {
       return res.status(404).json({ error: 'Movimiento no encontrado' });
     }
 
-    await ref.delete();
+    await ref.remove();
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Error al eliminar el movimiento', detalle: err.message });

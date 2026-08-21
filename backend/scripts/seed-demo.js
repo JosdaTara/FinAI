@@ -41,12 +41,8 @@ async function ensureDemoUser() {
 }
 
 async function clearUserData(userId) {
-  for (const collection of ['movements', 'budgets']) {
-    const snapshot = await db.collection(collection).where('userId', '==', userId).get();
-    const batch = db.batch();
-    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
-    await batch.commit();
-  }
+  await db.ref(`movements/${userId}`).remove();
+  await db.ref(`budgets/${userId}`).remove();
 }
 
 async function seedMovements(userId) {
@@ -70,20 +66,19 @@ async function seedMovements(userId) {
     { month: thisMonth, type: 'gasto', amount: 50000, date: dayOf(thisMonth, 16), category: 'Otros', description: 'Varios' },
   ];
 
-  const batch = db.batch();
+  const updates = {};
   for (const m of movements) {
-    const ref = db.collection('movements').doc();
-    batch.set(ref, {
-      userId,
+    const key = db.ref(`movements/${userId}`).push().key;
+    updates[key] = {
       type: m.type,
       amount: m.amount,
       date: m.date,
       category: m.category,
       description: m.description,
       createdAt: new Date().toISOString(),
-    });
+    };
   }
-  await batch.commit();
+  await db.ref(`movements/${userId}`).update(updates);
   console.log(`✅ ${movements.length} movimientos insertados (${lastMonth} y ${thisMonth})`);
 }
 
@@ -94,18 +89,17 @@ async function seedBudgets(userId) {
     { category: 'Entretenimiento', limit: 200000 },
   ];
 
-  const batch = db.batch();
+  const updates = {};
   for (const b of budgets) {
-    const ref = db.collection('budgets').doc();
-    batch.set(ref, {
-      userId,
+    const key = db.ref(`budgets/${userId}`).push().key;
+    updates[key] = {
       category: b.category,
       limit: b.limit,
       period: 'mensual',
       createdAt: new Date().toISOString(),
-    });
+    };
   }
-  await batch.commit();
+  await db.ref(`budgets/${userId}`).update(updates);
   console.log(`✅ ${budgets.length} presupuestos creados`);
 }
 

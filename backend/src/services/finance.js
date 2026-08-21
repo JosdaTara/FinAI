@@ -4,21 +4,27 @@ const { monthRange, monthKeyFromDate, previousMonths, currentMonthKey } = requir
 const MOVEMENTS = 'movements';
 const BUDGETS = 'budgets';
 
+async function getUserItems(userId, node) {
+  const snapshot = await db.ref(`${node}/${userId}`).once('value');
+  const value = snapshot.val() || {};
+  return Object.entries(value).map(([id, data]) => ({ id, ...data }));
+}
+
 async function getMovements(userId, { month, type, category } = {}) {
-  let query = db.collection(MOVEMENTS).where('userId', '==', userId);
+  let movements = await getUserItems(userId, MOVEMENTS);
 
   if (month) {
     const { start, end } = monthRange(month);
     const startKey = monthKeyFromDate(start);
     const endKey = monthKeyFromDate(new Date(end.getTime() - 1));
-    query = query.where('date', '>=', startKey).where('date', '<=', endKey);
+    movements = movements.filter((m) => m.date >= startKey && m.date <= endKey);
   }
 
-  if (type) query = query.where('type', '==', type);
-  if (category) query = query.where('category', '==', category);
+  if (type) movements = movements.filter((m) => m.type === type);
+  if (category) movements = movements.filter((m) => m.category === category);
 
-  const snapshot = await query.orderBy('date', 'desc').get();
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  movements.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  return movements;
 }
 
 function summarize(movements) {
@@ -71,8 +77,7 @@ async function getMonthlySeries(userId, monthsCount = 6) {
 }
 
 async function getBudgets(userId) {
-  const snapshot = await db.collection(BUDGETS).where('userId', '==', userId).get();
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return getUserItems(userId, BUDGETS);
 }
 
 async function getBudgetsWithUsage(userId, month = currentMonthKey()) {

@@ -13,15 +13,16 @@ try {
     throw new Error('FIREBASE_SERVICE_ACCOUNT_PATH no está definida en backend/.env');
   }
 
-  const serviceAccountPath = path.resolve(__dirname, '..', relativePath);
+  const serviceAccountPath = path.resolve(__dirname, '..', '..', relativePath);
   // eslint-disable-next-line global-require, import/no-dynamic-require
   const serviceAccount = require(serviceAccountPath);
 
   const app = admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
   });
 
-  db = app.firestore();
+  db = admin.database();
   auth = app.auth();
 } catch (err) {
   initError = err.message;

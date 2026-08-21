@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { ref, set } from 'firebase/database';
 import { auth, db } from '../lib/firebase';
 
 const AuthContext = createContext(null);
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
   async function register(nombre, correo, contraseña) {
     const credentials = await createUserWithEmailAndPassword(auth, correo, contraseña);
     await updateProfile(credentials.user, { displayName: nombre });
-    await setDoc(doc(db, 'users', credentials.user.uid), {
+    await set(ref(db, `users/${credentials.user.uid}`), {
       nombre,
       correo,
       creado: new Date().toISOString(),

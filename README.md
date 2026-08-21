@@ -18,7 +18,7 @@ Usuario → Interfaz Web (React) → Backend (Node + Express) → Firestore + AP
 |---|---|
 | Frontend | React 18 + Vite + React Router + Chart.js |
 | Backend | Node.js + Express |
-| Base de datos | Firebase Firestore |
+| Base de datos | Firebase Realtime Database |
 | Autenticación | Firebase Auth (correo/contraseña) |
 | IA | Google Gemini API |
 
@@ -47,7 +47,7 @@ FinAI/
 │       ├── components/    # Layout, StatCard, gráficos Chart.js
 │       ├── context/       # AuthContext
 │       └── lib/           # api.js, firebase.js, format.js
-└── firestore.rules        # Reglas de seguridad
+└── database.rules.json    # Reglas de seguridad de la Realtime Database
 ```
 
 ---
@@ -58,10 +58,10 @@ FinAI/
 
 1. Crea un proyecto en [console.firebase.google.com](https://console.firebase.google.com)
 2. **Authentication → Sign-in method → Correo electrónico/contraseña** → habilitar
-3. **Firestore Database → Crear base de datos** (modo de prueba)
-4. **Configuración del proyecto → Tus aplicaciones → Web `</>`**: copia los valores del objeto `firebaseConfig` → pégolos en `frontend/.env`
+3. **Realtime Database → Crear base de datos** (modo de prueba) → copia la **URL** de la base de datos (ej: `https://finai-uts-default-rtdb.firebaseio.com/`)
+4. **Configuración del proyecto → Tus aplicaciones → Web `</>`**: copia los valores del objeto `firebaseConfig` → pégolos en `frontend/.env` (incluye `databaseURL`)
 5. **Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada**: guarda el JSON descargado como `backend/serviceAccountKey.json`
-6. Publica las reglas de seguridad: copia `firestore.rules` en la pestaña *Reglas* de Firestore
+6. Publica las reglas de seguridad: en **Realtime Database → pestaña Reglas**, pega el contenido de `database.rules.json`
 
 ### 2. Gemini
 
@@ -74,6 +74,7 @@ FinAI/
 # frontend/.env  (copiar desde frontend/.env.example)
 VITE_FIREBASE_API_KEY=...
 VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_DATABASE_URL=https://finai-uts-default-rtdb.firebaseio.com
 VITE_FIREBASE_PROJECT_ID=...
 VITE_FIREBASE_STORAGE_BUCKET=...
 VITE_FIREBASE_MESSAGING_SENDER_ID=
@@ -84,6 +85,7 @@ VITE_API_URL=http://localhost:4000/api
 PORT=4000
 CORS_ORIGIN=http://localhost:5173
 FIREBASE_SERVICE_ACCOUNT_PATH=./serviceAccountKey.json
+FIREBASE_DATABASE_URL=https://finai-uts-default-rtdb.firebaseio.com
 GEMINI_API_KEY=...
 GEMINI_MODEL=gemini-2.0-flash
 ```
@@ -139,5 +141,5 @@ Todas las rutas (excepto `/health`) requieren el header `Authorization: Bearer <
 
 - Contraseñas gestionadas íntegramente por Firebase Auth (nunca se almacenan en nuestra base de datos).
 - Cada petición al backend valida el token de sesión; los datos siempre se filtran por `userId`.
-- Las reglas de Firestore bloquean el acceso directo del cliente a movimientos/presupuestos.
+- Las reglas de la Realtime Database bloquean el acceso directo del cliente a movimientos/presupuestos (solo el backend, vía SDK admin, puede leerlos/escribirlos).
 - Secretos (`.env`, clave de cuenta de servicio) excluidos del repositorio vía `.gitignore`.
