@@ -1298,3 +1298,107 @@ code {
 .auth-home a:hover {
   color: var(--text-muted);
 }
+
+/* Distribución del ingreso (Presupuestos) */
+.dist-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint {
+  color: var(--text-faint);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.alert-ok {
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: var(--primary);
+}
+
+.income-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.income-field {
+  flex: 1;
+  min-width: 220px;
+}
+
+.income-row .btn {
+  padding: 10px 16px;
+}
+
+.dist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.dist-table th {
+  text-align: left;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.dist-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-muted);
+}
+
+.dist-table th.right,
+.dist-table td.right {
+  text-align: right;
+}
+
+.amount-cell {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.pct-input {
+  width: 72px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 6px 9px;
+  font-size: 13.5px;
+}
+
+.pct-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.dist-table tfoot td {
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: none;
+}
+
+.dist-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.dist-note {
+  color: var(--text-faint);
+  font-size: 13px;
+}

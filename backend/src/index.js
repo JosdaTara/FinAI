@@ -6,6 +6,7 @@ const movementsRouter = require('./routes/movements');
 const budgetsRouter = require('./routes/budgets');
 const statsRouter = require('./routes/stats');
 const chatRouter = require('./routes/chat');
+const profileRouter = require('./routes/profile');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -26,6 +27,7 @@ app.use('/api/movements', movementsRouter);
 app.use('/api/budgets', budgetsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/finai', chatRouter);
+app.use('/api/profile', profileRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });

@@ -3,6 +3,18 @@ import { api } from '../lib/api';
 import { formatCOP, CATEGORIES, currentMonth, formatMonth } from '../lib/format';
 import Icon from '../components/Icon';
 
+const DEFAULT_DIST = {
+  Alimentación: 25,
+  Vivienda: 15,
+  Transporte: 12,
+  Educación: 10,
+  Servicios: 10,
+  Salud: 8,
+  Entretenimiento: 8,
+  Compras: 7,
+  Otros: 5,
+};
+
 export default function Budgets() {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +24,12 @@ export default function Budgets() {
   const [limit, setLimit] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  const [income, setIncome] = useState('');
+  const [realIncome, setRealIncome] = useState(0);
+  const [dist, setDist] = useState({ ...DEFAULT_DIST });
+  const [applying, setApplying] = useState(false);
+  const [incomeMsg, setIncomeMsg] = useState('');
 
   async function load() {
     setLoading(true);
@@ -27,7 +45,62 @@ export default function Budgets() {
 
   useEffect(() => {
     load();
+    api
+      .get('/profile')
+      .then((p) => {
+        if (p.monthlyIncome > 0) setIncome(String(p.monthlyIncome));
+      })
+      .catch(() => {});
+    api
+      .get(`/stats/summary?month=${currentMonth()}`)
+      .then((s) => setRealIncome(s.totalIncome || 0))
+      .catch(() => {});
   }, []);
+
+  async function handleSaveIncome() {
+    setError('');
+    setIncomeMsg('');
+    try {
+      await api.put('/profile/income', { monthlyIncome: Number(income) });
+      setIncomeMsg('Ingreso guardado.');
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  function setPct(cat, value) {
+    const pct = value === '' ? '' : Math.max(0, Math.min(100, Number(value)));
+    setDist((d) => ({ ...d, [cat]: pct }));
+  }
+
+  const incomeNum = Number(income) || 0;
+  const totalPct = CATEGORIES.reduce((sum, cat) => sum + (Number(dist[cat]) || 0), 0);
+  const unassignedPct = Math.max(0, 100 - totalPct);
+  const canApply = incomeNum > 0 && totalPct > 0 && totalPct <= 100;
+
+  async function applyDistribution() {
+    setError('');
+    setIncomeMsg('');
+    setApplying(true);
+    try {
+      for (const cat of CATEGORIES) {
+        const amount = Math.round((incomeNum * (Number(dist[cat]) || 0)) / 100);
+        if (amount <= 0) continue;
+        const existing = budgets.find((b) => b.category === cat);
+        if (existing) {
+          await api.put(`/budgets/${existing.id}`, { limit: amount });
+        } else {
+          await api.post('/budgets', { category: cat, limit: amount });
+        }
+      }
+      await load();
+      setIncomeMsg(`Distribución aplicada a ${formatCOP(incomeNum)} de ingreso.`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setApplying(false);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -70,11 +143,93 @@ export default function Budgets() {
         <p className="page-subtitle">Límites de gasto mensual por categoría — {formatMonth(currentMonth())}</p>
       </header>
 
+      <section className="panel dist-panel">
+        <h3>
+          <Icon name="target" size={16} /> Distribución del ingreso
+        </h3>
+        <p className="hint">
+          Ingresa tu ingreso mensual total y repártelo entre las categorías. Al aplicar, se crean o
+          actualizan los presupuestos automáticamente.
+        </p>
+
+        {error && <p className="alert alert-error">{error}</p>}
+        {incomeMsg && <p className="alert alert-ok">{incomeMsg}</p>}
+
+        <div className="income-row">
+          <label className="income-field">
+            Ingreso mensual total
+            <input
+              type="number"
+              min="0"
+              step="any"
+              value={income}
+              onChange={(e) => setIncome(e.target.value)}
+              placeholder="Ej: 1500000"
+            />
+          </label>
+          <button type="button" className="btn btn-outline" onClick={handleSaveIncome} disabled={!income}>
+            Guardar ingreso
+          </button>
+          {realIncome > 0 && (
+            <button type="button" className="btn btn-outline" onClick={() => setIncome(String(realIncome))}>
+              Usar ingresos registrados ({formatCOP(realIncome)})
+            </button>
+          )}
+        </div>
+
+        <table className="dist-table">
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>%</th>
+              <th className="right">Presupuesto calculado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {CATEGORIES.map((cat) => (
+              <tr key={cat}>
+                <td>{cat}</td>
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    className="pct-input"
+                    value={dist[cat]}
+                    onChange={(e) => setPct(cat, e.target.value)}
+                  />
+                </td>
+                <td className="right amount-cell">{formatCOP(Math.round((incomeNum * (Number(dist[cat]) || 0)) / 100))}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              <td>
+                <span className={totalPct > 100 ? 'text-expense' : 'text-income'}>{totalPct}%</span>
+              </td>
+              <td className="right amount-cell">{formatCOP(Math.round((incomeNum * totalPct) / 100))}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div className="dist-footer">
+          <span className="dist-note">
+            {totalPct > 100
+              ? 'La suma de porcentajes supera el 100%. Ajusta los valores.'
+              : `Sin asignar: ${unassignedPct}% (${formatCOP(Math.round((incomeNum * unassignedPct) / 100))})`}
+          </span>
+          <button type="button" className="btn btn-primary" onClick={applyDistribution} disabled={!canApply || applying}>
+            {applying ? 'Aplicando…' : 'Aplicar distribución'}
+          </button>
+        </div>
+      </section>
+
       <div className="grid-2">
         <section className="panel">
           <h3>{editingId ? 'Editar presupuesto' : 'Nuevo presupuesto'}</h3>
-
-          {error && <p className="alert alert-error">{error}</p>}
 
           <form onSubmit={handleSubmit} className="stack-form">
             {!editingId && (
@@ -130,7 +285,7 @@ export default function Budgets() {
             <p className="empty-note">Cargando…</p>
           ) : budgets.length === 0 ? (
             <p className="empty-note">
-              Aún no tienes presupuestos. Crea uno para controlar tus gastos por categoría.
+              Aún no tienes presupuestos. Usa la distribución del ingreso o crea uno manualmente.
             </p>
           ) : (
             <ul className="budget-list">
